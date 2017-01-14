@@ -1,0 +1,102 @@
+Queries to handle the following scenarios:
+
+	(a) List open questions (questions with no accepted answer). The query should retrieve question
+
+	titles, tags, the post date, the name of the user that posted, the total number of votes, and the
+
+	total number of answers. See stackoverflow.com/questions for an idea of the information you
+
+	need. Write three variations on this query:
+
+		i. List open questions tagged with a particular tag (for example “java”). You can assume the
+
+		tag is a constant value.
+
+		ii. List open questions in reverse order of when they were posted.
+
+		iii. List open questions in decreasing order of total number of votes received.
+
+	(b) Display a question with its replies. The query should retrieve the question title and body, the
+
+	post date, the name of the user that posted, the total number of votes and favorites, all comments
+
+	on the question, all answers with their vote totals, and all comments on all answers. See http:
+
+	//stackoverflow.com/questions/11227809 for an example. You can assume the post ID is a
+
+	constant value.
+
+For each scenario, write just one SQL query that retrieves and summarizes all necessary information
+
+(this may not be how it works in reality, but it is how I would like you to write them).
+
+
+Answers for each query:
+
+a) select questions.qid, group_concat(distinct tags.name) as Tags, questions.pdate,
+
+users.name, count(distinct answers.aid) as No_of_answers, count(distinct votes.uid) as
+
+No_of_votes from questions left outer join answers on questions.qid = answers.qid join users
+
+on users.uid = questions.uid left outer join votes on questions.qid = votes.pid left outer join
+
+posttags on questions.qid = posttags.pid left outer join tags on tags.tid = posttags.tid where
+
+hasacc=0 group by questions.qid;
+
+
+a i) select questions.qid, group_concat(distinct tags.name) as Tags, questions.pdate,
+
+users.name, count(distinct answers.aid) as No_of_answers, count(distinct votes.uid) as
+
+No_of_votes from questions left outer join answers on questions.qid = answers.qid join users
+
+on users.uid = questions.uid left outer join votes on questions.qid = votes.pid left outer join
+
+posttags on questions.qid = posttags.pid left outer join tags on tags.tid = posttags.tid where
+
+hasacc=0 and tags.name=&#39;javascript&#39; group by questions.qid;
+
+
+a ii) select questions.qid, group_concat(distinct tags.name) as Tags, questions.pdate,
+
+users.name, count(distinct answers.aid) as No_of_answers, count(distinct votes.uid) as
+
+No_of_votes from questions left outer join answers on questions.qid = answers.qid join users
+
+on users.uid = questions.uid left outer join votes on questions.qid = votes.pid left outer join
+
+posttags on questions.qid = posttags.pid left outer join tags on tags.tid = posttags.tid where
+
+hasacc=0 group by questions.qid order by questions.pdate desc;
+
+
+a iii) select questions.qid, group_concat(distinct tags.name) as Tags, questions.pdate,
+
+users.name, count(distinct answers.aid) as No_of_answers, count(distinct votes.uid) as
+
+No_of_votes from questions left outer join answers on questions.qid = answers.qid join users
+
+on users.uid = questions.uid left outer join votes on questions.qid = votes.pid left outer join
+
+posttags on questions.qid = posttags.pid left outer join tags on tags.tid = posttags.tid where
+
+hasacc=0 group by questions.qid order by No_of_votes desc;
+
+
+b) select ques.title, ques.body, users.name, ans.body, group_concat(distinct c1.ctext) as
+
+Ques_comments, count(distinct favs.uid) as QFavs, count(distinct v1.uid) as QVotes,
+
+group_concat(distinct c2.ctext) as Ans_comments, count(distinct v2.uid) as AVotes from
+
+questions as ques left outer join answers as ans on ques.qid=ans.qid join users on
+
+ques.uid=users.uid left outer join favs on ques.qid=favs.pid left outer join comments as c1 on
+
+ques.qid=c1.pid left outer join votes as v1 on ques.qid=v1.pid left outer join comments as c2
+
+on ans.aid=c2.pid left outer join votes as v2 on ans.aid=v2.pid where ques.qid=296056 group
+
+by ans.aid;
